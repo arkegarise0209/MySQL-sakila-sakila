@@ -1,0 +1,216 @@
+{\rtf1\ansi\ansicpg1252\deff0\nouicompat\deflang1033{\fonttbl{\f0\fnil\fcharset0 Calibri;}}
+{\colortbl ;\red0\green77\blue187;}
+{\*\generator Riched20 10.0.16299}\viewkind4\uc1 
+\pard\sa200\sl276\slmult1\cf1\f0\fs22\lang9\par
+
+\pard\sa200\sl276\slmult1\qc\cf0\b\i\fs32 Final Sakila Analysis\cf1\b0\i0\fs22\par
+
+\pard\sa200\sl276\slmult1\par
+USE sakila;\par
+
+\pard\sl240\slmult1\cf0 1a. You need a list of all the actors who have Display the first and last names of all actors from the table actor.\par
+\par
+\cf1 SELECT first_name, last_name\par
+FROM actor;\par
+\cf0\par
+1b. Display the first and last name of each actor in a single column in upper case letters. Name the column Actor Name.\par
+\par
+\cf1 SELECT UPPER(CONCAT(first_name, ' ', last_name)) AS 'Actor Name'\par
+FROM actor;\par
+\cf0\par
+2a. You need to find the ID number, first name, and last name of an actor, of whom you know only the first name, "Joe." What is one query would you use to obtain this information?\par
+\par
+\cf1 SELECT actor_id, first_name, last_name \par
+FROM actor\par
+WHERE first_name = 'JOE';\par
+\cf0\par
+2b. Find all actors whose last name contain the letters GEN:\par
+\par
+\cf1 SELECT actor_id, first_name, last_name \par
+FROM actor\par
+WHERE last_name LIKE '%GEN%';\par
+\cf0\par
+2c. Find all actors whose last names contain the letters LI. This time, order the rows by last name and first name, in that order:\par
+\par
+\cf1 SELECT actor_id, first_name, last_name \par
+FROM actor\par
+WHERE last_name LIKE '%LI%'\par
+ORDER BY last_name, first_name;\par
+\cf0\par
+2d. Using IN, display the country_id and country columns of the following countries: Afghanistan, Bangladesh, and China:\par
+\par
+\cf1 SELECT country_id, country\par
+FROM country\par
+WHERE country IN ('Afghanistan', 'Bangladesh', 'China');\par
+\cf0\par
+3a. Add a middle_name column to the table actor. Position it between first_name and last_name. Hint: you will need to specify the data type.\par
+\par
+\cf1 SELECT * FROM actor;\par
+\par
+ALTER TABLE actor\par
+ADD COLUMN middle_name VARCHAR(50) AFTER first_name;\par
+\cf0\par
+3b. You realize that some of these actors have tremendously long last names. Change the data type of the middle_name column to blobs.\par
+\par
+\cf1 ALTER TABLE actor\par
+MODIFY COLUMN middle_name BLOB;\par
+\cf0\par
+3c. Now delete the middle_name column.\par
+\par
+\cf1 ALTER TABLE actor\par
+DROP COLUMN middle_name;\par
+\cf0\par
+#4a. List the last names of actors, as well as how many actors have that last name.\par
+SELECT last_name, COUNT(*) AS 'Count'\par
+FROM actor\par
+GROUP BY last_name;\par
+\par
+#4b. List last names of actors and the number of actors who have that last name, but only for names that are shared by at least two actors\par
+SELECT last_name, COUNT(*) AS 'Count'\par
+FROM actor\par
+GROUP BY last_name\par
+HAVING Count >= 2;\par
+\par
+#4c. Oh, no! The actor HARPO WILLIAMS was accidentally entered in the actor table as GROUCHO WILLIAMS, the name of Harpo's second cousin's husband's yoga teacher. Write a query to fix the record.\par
+SELECT * FROM actor;\par
+UPDATE actor\par
+SET first_name = 'HARPO'\par
+WHERE first_name = 'GROUCHO' AND last_name = 'WILLIAMS';\par
+\par
+#4d. Perhaps we were too hasty in changing GROUCHO to HARPO. It turns out that GROUCHO was the correct name after all! In a single query, if the first name of the actor is currently HARPO, change it to GROUCHO. Otherwise, change the first name to MUCHO GROUCHO, as that is exactly what the actor will be with the grievous error. BE CAREFUL NOT TO CHANGE THE FIRST NAME OF EVERY ACTOR TO MUCHO GROUCHO, HOWEVER! (Hint: update the record using a unique identifier.)\par
+UPDATE actor\par
+SET first_name = \par
+CASE\par
+WHEN first_name = 'HARPO'\par
+THEN 'GROUCHO'\par
+ELSE 'MUCHO GROUCHO'\par
+END\par
+WHERE actor_id = 172;\par
+\par
+#5a. You cannot locate the schema of the address table. Which query would you use to re-create it?\par
+DESCRIBE sakila.address;\par
+\par
+#6a. Use JOIN to display the first and last names, as well as the address, of each staff member. Use the tables staff and address:\par
+SELECT first_name, last_name, address\par
+FROM staff s \par
+INNER JOIN address a \par
+ON s.address_id = a.address_id;\par
+\par
+#6b. Use JOIN to display the total amount rung up by each staff member in August of 2005. Use tables staff and payment. \par
+SELECT first_name, last_name, SUM(amount) AS 'Total'\par
+FROM staff s \par
+INNER JOIN payment p \par
+ON s.staff_id = p.staff_id\par
+GROUP BY s.first_name, s.last_name;\par
+\par
+#6c. List each film and the number of actors who are listed for that film. Use tables film_actor and film. Use inner join.\par
+SELECT title, COUNT(actor_id) AS 'Total'\par
+FROM film f \par
+INNER JOIN film_actor a \par
+ON f.film_id = a.film_id\par
+GROUP BY f.title;\par
+\par
+#6d. How many copies of the film Hunchback Impossible exist in the inventory system?\par
+SELECT title, COUNT(inventory_id) AS 'Total'\par
+FROM film f\par
+INNER JOIN inventory i\par
+ON f.film_id = i.film_id\par
+WHERE title = "Hunchback Impossible";\par
+\par
+#6e. Using the tables payment and customer and the JOIN command, list the total paid by each customer. List the customers alphabetically by last name:\par
+SELECT first_name, last_name, SUM(amount) AS 'Total Paid'\par
+FROM payment p\par
+INNER JOIN customer c\par
+ON p.customer_id = c.customer_id\par
+GROUP BY p.customer_id\par
+ORDER BY last_name ASC;\par
+\par
+#7a. The music of Queen and Kris Kristofferson have seen an unlikely resurgence. As an unintended consequence, films starting with the letters K and Q have also soared in popularity. Use subqueries to display the titles of movies starting with the letters K and Q whose language is English. \par
+SELECT title\par
+FROM film\par
+WHERE language_id IN \par
+    (SELECT language_id\par
+    FROM language\par
+    WHERE name = "English")\par
+ AND (title LIKE 'K%') OR (title LIKE 'Q%'); \par
+ \par
+#7b. Use subqueries to display all actors who appear in the film Alone Trip.\par
+SELECT first_name, last_name\par
+FROM actor\par
+WHERE actor_id IN\par
+(SELECT actor_id\par
+FROM film_actor\par
+\tab WHERE film_id IN\par
+\tab (SELECT film_id \par
+    FROM film\par
+\tab\tab WHERE title = "Alone Trip"));\par
+        \par
+#7c. You want to run an email marketing campaign in Canada, for which you will need the names and email addresses of all Canadian customers. Use joins to retrieve this information.\par
+SELECT last_name, first_name, email\par
+FROM customer\par
+INNER JOIN customer_list\par
+ON customer.customer_id = customer_list.ID\par
+WHERE customer_list.country = 'Canada';\par
+\par
+#7d. Sales have been lagging among young families, and you wish to target all family movies for a promotion. Identify all movies categorized as family films.\par
+SELECT title, name \par
+FROM category, film, film_category\par
+WHERE category.category_id = film_category.category_id\par
+AND film_category.film_id = film.film_id\par
+AND name = 'Family';\par
+\par
+#7e. Display the most frequently rented movies in descending order.\par
+SELECT title AS 'movie_title', COUNT(rental_date) AS 'rent_count'\par
+FROM film, rental, inventory\par
+WHERE film.film_id = inventory.film_id\par
+AND inventory.inventory_id = rental.inventory_id\par
+GROUP BY title\par
+ORDER BY COUNT(rental_date) DESC;\par
+\par
+#7f. Write a query to display how much business, in dollars, each store brought in.\par
+SELECT store.store_id AS 'store', SUM(amount) AS 'total_revenue'\par
+FROM store, staff, payment\par
+WHERE store.store_id = staff.store_id\par
+AND staff.staff_id = payment.staff_id\par
+GROUP BY store.store_id\par
+ORDER BY SUM(amount) DESC;\par
+\par
+#7g. Write a query to display for each store its store ID, city, and country.\par
+SELECT store_id, city, country\par
+FROM store, address, city, country\par
+WHERE store.address_id = address.address_id\par
+AND address.city_id = city.city_id\par
+AND city.country_id = country.country_id;\par
+\par
+#7h. List the top five genres in gross revenue in descending order. (Hint: you may need to use the following tables: category, film_category, inventory, payment, and rental.)\par
+SELECT name, SUM(amount) AS 'gross_revenue'\par
+FROM category, film_category, inventory, rental, payment\par
+WHERE category.category_id = film_category.category_id\par
+AND film_category.film_id = inventory.film_id\par
+AND inventory.inventory_id = rental.inventory_id\par
+AND rental.rental_id = payment.rental_id\par
+GROUP BY name\par
+ORDER BY gross_revenue DESC\par
+LIMIT 5;\par
+\par
+#8a. In your new role as an executive, you would like to have an easy way of viewing the Top five genres by gross revenue. Use the solution from the problem above to create a view. If you haven't solved 7h, you can substitute another query to create a view.\par
+#DROP VIEW IF EXISTS top_five_genres;\par
+CREATE VIEW top_five_genres AS\par
+\par
+\tab SELECT name, SUM(amount) AS 'gross_revenue'\par
+\tab FROM category, film_category, inventory, rental, payment\par
+\tab WHERE category.category_id = film_category.category_id\par
+\tab AND film_category.film_id = inventory.film_id\par
+\tab AND inventory.inventory_id = rental.inventory_id\par
+\tab AND rental.rental_id = payment.rental_id\par
+\tab GROUP BY name\par
+\tab ORDER BY gross_revenue DESC\par
+\tab LIMIT 5;\par
+\par
+#8b. How would you display the view that you created in 8a?\par
+SELECT * FROM top_five_genres;\par
+\par
+#8c. You find that you no longer need the view top_five_genres. Write a query to delete it.\par
+DROP VIEW top_five_genres;\par
+}
+ 
